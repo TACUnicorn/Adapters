@@ -18,6 +18,6 @@ public interface OrderMapper {
     })
     ArrayList<Order> getOrders();
 
-    @Select("insert into orders()")
+    @Select("insert into orders(material_id, material_name, material_no, amount, oem) values (#{materialId}, #{materialName}, #{materialNo}, #{amount}, #{oem})")
     void add(Order order);
 }

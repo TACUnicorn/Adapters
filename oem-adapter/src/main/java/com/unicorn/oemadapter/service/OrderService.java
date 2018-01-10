@@ -27,11 +27,19 @@ public class OrderService {
         order.setMaterialName(materialName);
         order.setMaterialNo(materialNo);
         order.setOem(oem);
-        if (oem == "Foxconn Technology Group") {
+
+        System.out.println(materialId);
+        System.out.println(materialName);
+        System.out.println(materialNo);
+        System.out.println(oem);
+
+        if (oem.equals("Foxconn Technology Group")) {
             order.setAmount(contactOem(materialId, materialNo, 8081));
         } else {
             order.setAmount(contactOem(materialId, materialNo, 8082));
         }
+
+        System.out.println(order.getAmount());
 
         if (transfer(fromAccount, toAccount, order.getAmount())) {
             new Thread(new Runnable() {
@@ -51,12 +59,12 @@ public class OrderService {
 
     public int contactOem(int materialId, int materialNo, int oemPorts) {
         OkHttpClient mOkHttpClient = new OkHttpClient();
-        String content = "{\"id\":"+ materialId +
-                ",\"num\":" + materialId + "}";
-        RequestBody requestBody = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"), content);
+        RequestBody requestBody = new FormBody.Builder()
+                .add("materialId", String.valueOf(materialId))
+                .add("num", String.valueOf(materialNo))
+                .build();
         Request request = new Request.Builder()
-                .url("http://10.0.1.52:" + oemPorts + "/oem/order")
+                .url("http://10.0.1.2:" + oemPorts + "/oem/order")
                 .header("Content-Type", "application/json")
                 .post(requestBody)
                 .build();
@@ -64,14 +72,14 @@ public class OrderService {
 
         try {
             Response response = call.execute();
-            System.out.println(response.body().string());
-//            TODO
-            return 100;
+            return Integer.parseInt(response.body().string());
         } catch (IOException e) {
             e.printStackTrace();
         }
         return 0;
     }
+
+
 
     public void putWarehouse(int materialId, int materialNo) {
         OkHttpClient mOkHttpClient = new OkHttpClient();
