@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+
 
 @Service
 public class OrderService {
@@ -28,18 +28,11 @@ public class OrderService {
         order.setMaterialNo(materialNo);
         order.setOem(oem);
 
-        System.out.println(materialId);
-        System.out.println(materialName);
-        System.out.println(materialNo);
-        System.out.println(oem);
-
         if (oem.equals("Foxconn Technology Group")) {
             order.setAmount(contactOem(materialId, materialNo, 8081));
         } else {
             order.setAmount(contactOem(materialId, materialNo, 8082));
         }
-
-        System.out.println(order.getAmount());
 
         if (transfer(fromAccount, toAccount, order.getAmount())) {
             new Thread(new Runnable() {
@@ -72,7 +65,14 @@ public class OrderService {
 
         try {
             Response response = call.execute();
-            return Integer.parseInt(response.body().string());
+            if (oemPorts == 8081) {
+                return Integer.parseInt(response.body().string());
+            } else {
+                String tmp = response.body().string();
+                String tmp1 = tmp.substring(tmp.indexOf(">") + 1, tmp.indexOf("</"));
+                System.out.println(tmp1);
+                return 0;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,7 +88,7 @@ public class OrderService {
         RequestBody requestBody = RequestBody.create(
                 MediaType.parse("application/json; charset=utf-8"), content);
         Request request = new Request.Builder()
-                .url("http://10.0.1.52:8080/warehouse/put")
+                .url("http://10.0.1.52:8080/warehouse/product/put")
                 .header("Content-Type", "application/json")
                 .post(requestBody)
                 .build();
